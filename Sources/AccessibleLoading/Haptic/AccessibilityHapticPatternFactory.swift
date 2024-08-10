@@ -3,24 +3,24 @@ import Foundation
 import UIKit
 
 @available(iOS 13.0, *)
-final class AccessibilityFeedbackEngine {
+final class AccessibilityHapticPatternFactory {
 
     // MARK: - Internal Methods
 
-    func start(duration: TimeInterval) -> CHHapticPattern? {
-        guard UIAccessibility.isVoiceOverRunning else {
+    func makeOnStartActivityPattern(duration: TimeInterval) -> CHHapticPattern? {
+        guard isVoiceOverRunning else {
             return nil
         }
-        let events = makeEvents(duration: duration)
+        let events = makeActivityEvents(duration: duration)
         return try? CHHapticPattern(events: events, parameterCurves: [])
     }
 
-    func stop() -> CHHapticPattern? {
-        guard UIAccessibility.isVoiceOverRunning else {
+    func makeOnStopActivityPattern() -> CHHapticPattern? {
+        guard isVoiceOverRunning else {
             return nil
         }
-        let event = makeStopEvent()
-        return try? CHHapticPattern(events: event, parameterCurves: [])
+        let events = makeActivityStopEvent()
+        return try? CHHapticPattern(events: events, parameterCurves: [])
     }
 
     // MARK: - Private Types
@@ -38,27 +38,32 @@ final class AccessibilityFeedbackEngine {
         static let delayToFinalEvent: TimeInterval = 0.2
     }
 
+    // MARK: - Private Properties
+
+    private var isVoiceOverRunning: Bool { UIAccessibility.isVoiceOverRunning }
+
     // MARK: - Private Methods
 
-    private func makeEvents(duration: TimeInterval) -> [CHHapticEvent] {
+    private func makeActivityEvents(duration: TimeInterval) -> [CHHapticEvent] {
         let interval = 1 / TimeInterval(Constants.eventsPerSecond)
-        return (0..<Int(duration) * Constants.eventsPerSecond).map { index in
+        let numberOfEvents = Int(duration) * Constants.eventsPerSecond
+        return (0..<numberOfEvents).map { index in
             let time = TimeInterval(index) * interval
-            return makeLoadingEvent(time: time)
+            return makeActivityLoadingEvent(time: time)
         }
     }
 
-    private func makeLoadingEvent(time: TimeInterval) -> CHHapticEvent {
-        return makeEvent(with: Constants.standardEvent, time: time)
+    private func makeActivityLoadingEvent(time: TimeInterval) -> CHHapticEvent {
+        return makeActivityEvent(with: Constants.standardEvent, time: time)
     }
 
-    private func makeStopEvent() -> [CHHapticEvent] {
-        let beforeFinalEvent = makeEvent(with: Constants.penultimateEvent, time: 0)
-        let finalEvent = makeEvent(with: Constants.finalEvent, time: Constants.delayToFinalEvent)
+    private func makeActivityStopEvent() -> [CHHapticEvent] {
+        let beforeFinalEvent = makeActivityEvent(with: Constants.penultimateEvent, time: 0)
+        let finalEvent = makeActivityEvent(with: Constants.finalEvent, time: Constants.delayToFinalEvent)
         return [beforeFinalEvent, finalEvent]
     }
 
-    private func makeEvent(with event: Event, time: TimeInterval) -> CHHapticEvent {
+    private func makeActivityEvent(with event: Event, time: TimeInterval) -> CHHapticEvent {
         let intensityParameter = CHHapticEventParameter(parameterID: .hapticIntensity, value: event.intensity)
         let sharpnessParameter = CHHapticEventParameter(parameterID: .hapticSharpness, value: event.sharpness)
         return CHHapticEvent(

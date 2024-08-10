@@ -8,16 +8,16 @@ public final class AccessibleActivityIndicatorView: UIActivityIndicatorView {
 
     public override func startAnimating() {
         super.startAnimating()
-        feedbackEngine.start()
+        accessibilityHapticEngine?.startActivity()
     }
     
     public override func stopAnimating() {
         super.stopAnimating()
-        feedbackEngine.stop()
+        accessibilityHapticEngine?.stopActivity()
     }
 
     // MARK: - Private Properties
 
-    private let feedbackEngine = AccessibilityHapticEngine()
+    private let accessibilityHapticEngine = AccessibilityHapticEngine()
 
 }
